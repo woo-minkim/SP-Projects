@@ -73,9 +73,3 @@ fg %1
 - 파싱/실행/시그널/잡 관리를 분리해 phase 확장 시 충돌을 줄임
 - foreground 대기(`sigsuspend`)와 background 진행을 명확히 분기
 - `SIGCHLD` 기반 상태 갱신으로 zombie 프로세스 누적을 방지
-
-## 한계 및 개선 여지
-
-- 리다이렉션(`>`, `<`) 및 고급 quoting/escaping 처리는 미지원
-- job ID/프로세스 그룹(`pgid`) 관리 체계를 더 엄격히 정리할 여지 있음
-- 파싱 오류 메시지/복구 로직을 강화하면 interactive UX가 좋아짐
