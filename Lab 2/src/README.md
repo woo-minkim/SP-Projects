@@ -1,0 +1,1 @@
+make 명령어를 통해 build하고 ./myshell로 실행시킨다.
