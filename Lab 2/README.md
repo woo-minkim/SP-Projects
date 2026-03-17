@@ -1,75 +1,81 @@
-﻿# Lab 2: `myshell` 구현 (Phase 1 ~ Phase 3)
+﻿# Lab 2. Unix Shell Implementation
 
-## 개요
+Unix Shell의 핵심 실행 모델을 직접 구현한 프로젝트입니다.  
+기본 명령 실행부터 파이프라인, background 실행, job control, signal 처리까지 확장하며 **interactive shell의 주요 동작을 단계적으로 구현**했습니다.
 
-Lab 2는 Unix shell의 핵심 기능을 단계적으로 구현한 과제입니다.  
-최종 목표는 명령 실행기 수준을 넘어, 파이프/백그라운드/잡 제어/시그널 처리를 포함한 interactive shell을 완성하는 것입니다.
+## Overview
 
-## 구현 단계 (Phase)
+이 프로젝트의 목표는 
+실제 shell처럼 foreground/background 프로세스를 관리하고 파이프라인과 signal 기반 상태 제어를 지원하는 실행 환경을 만드는 것이었습니다.
 
-### Phase 1: 기본 shell loop + 명령 실행
+- 명령 입력 및 파싱
+- `fork` / `execvp` 기반 외부 명령 실행
+- 파이프라인 처리
+- background job 실행
+- job control 및 signal 기반 상태 관리
 
-- 무엇을 구현했나
-  - 프롬프트 출력 및 입력 루프
-  - `parse_line()` 기반 인자 분해
-  - `Fork()` + `execvp()`로 외부 명령 실행
-  - 최소 built-in 처리(`cd`, `exit` 등)
-- 왜 필요한가
-  - shell의 최소 실행 단위(입력 → 파싱 → 실행 → 복귀)를 안정화해야 이후 phase 확장이 가능
-- 코드 포인트
-  - `main()`, `eval()`, `parse_line()`, `builtin_command()`
+## Development Stages
 
-### Phase 2: 파이프라인 + 백그라운드 실행
+### Phase 1. Basic Shell Loop
+기본적인 shell 실행 흐름을 구현한 단계입니다.
 
-- 무엇을 구현했나
-  - `parse_pipe()`로 `cmd1 | cmd2 | ...` 분해
-  - `pipe()` + `dup2()`로 프로세스 간 stdin/stdout 연결
-  - `&` 파싱 후 foreground/background 분기 실행
-  - 파이프 명령 종료 후 FD 정리
-- 왜 필요한가
-  - 실제 shell 사용성의 핵심인 조합 명령과 비동기 실행을 지원하기 위함
-- 코드 포인트
-  - `parse_pipe()`, `eval()` 내부 `cmdidx/cmdcnt` 분기, `bgflag`
+- 프롬프트 출력 및 입력 루프 구성
+- `parse_line()` 기반 인자 분해
+- `fork()` + `execvp()`를 통한 외부 명령 실행
+- `cd`, `exit` 등 최소 built-in 명령 처리
 
-### Phase 3: Job control + Signal 처리
+이 단계에서는 shell의 기본 구조인 **입력 → 파싱 → 실행 → 복귀** 흐름을 안정적으로 만드는 데 집중했습니다.
 
-- 무엇을 구현했나
-  - job 테이블(`jobs[]`) 기반 상태 관리
-  - `jobs`, `kill`, `bg`, `fg` built-in 구현
-  - `SIGCHLD` 핸들러로 자식 종료/중지/재개 상태 반영
-  - `SIGINT`, `SIGTSTP` 처리 및 foreground 대기 동기화
-- 왜 필요한가
-  - interactive shell에서 foreground/background 프로세스 제어를 일관되게 보장하기 위함
-- 코드 포인트
-  - `sigchld_handler()`, `show_jobs()`, `kill_job()`, `bg_wake()`, `fg_run()`, `parse_job()`
+### Phase 2. Pipeline and Background Execution
+명령 조합과 비동기 실행을 지원하도록 확장한 단계입니다.
 
-## 실행 방법
+- `parse_pipe()`를 통해 `cmd1 | cmd2 | ...` 형태의 파이프라인 분해
+- `pipe()`와 `dup2()`를 사용해 프로세스 간 표준 입출력 연결
+- `&` 파싱을 통한 foreground / background 실행 분기
+- 파이프 실행 후 파일 디스크립터 정리
 
-실행 위치: `Lab 2/src`
+이 단계에서는 shell 사용성의 핵심인 **명령 연결과 비동기 실행**을 구현했습니다.
 
-```bash
-make
-./myshell
-```
+### Phase 3. Job Control and Signal Handling
+interactive shell에 필요한 프로세스 제어 기능을 구현한 단계입니다.
 
-프롬프트 예시:
+- `jobs[]` 테이블 기반 job 상태 관리
+- `jobs`, `kill`, `bg`, `fg` built-in 명령 구현
+- `SIGCHLD` 핸들러를 통한 자식 프로세스 종료 / 중지 / 재개 상태 반영
+- `SIGINT`, `SIGTSTP` 처리 및 foreground job 동기화
 
-```text
-CSE4100-SP-P2>
-```
+이 단계에서는 foreground와 background 프로세스를 구분해 관리하고  
+signal 기반으로 상태를 갱신하는 **실제 shell에 가까운 제어 흐름**을 구현했습니다.
 
-테스트 예시:
+## What I Built
 
-```text
-ls
-ls | grep .c
-sleep 10 &
-jobs
-fg %1
-```
+- 명령 문자열을 파싱해 외부 명령 실행 및 built-in 처리로 연결하는 shell 루프를 구현했습니다.
+- 파이프라인 명령을 분해하고 `pipe()` / `dup2()`를 사용해 프로세스 간 입출력을 연결했습니다.
+- `&` 기반 background 실행을 지원하고 foreground 실행과 명확히 분기했습니다.
+- job 테이블을 구성해 실행 중인 프로세스 상태를 관리했습니다.
+- `SIGCHLD`, `SIGINT`, `SIGTSTP`를 처리해 자식 프로세스 상태 갱신과 foreground 제어를 구현했습니다.
+- `jobs`, `bg`, `fg`, `kill` 명령을 통해 interactive shell 수준의 job control 기능을 구성했습니다.
 
-## 핵심 구현 포인트
+## Technical Focus
 
-- 파싱/실행/시그널/잡 관리를 분리해 phase 확장 시 충돌을 줄임
-- foreground 대기(`sigsuspend`)와 background 진행을 명확히 분기
-- `SIGCHLD` 기반 상태 갱신으로 zombie 프로세스 누적을 방지
+이 프로젝트에서 중점적으로 다룬 부분은 다음과 같습니다.
+
+- **Process Creation**: `fork`, `execvp`, `wait` 기반 명령 실행
+- **Pipeline Handling**: `pipe`, `dup2`를 이용한 프로세스 간 데이터 전달
+- **Job Control**: foreground / background job 관리
+- **Signal Handling**: `SIGCHLD`, `SIGINT`, `SIGTSTP` 처리
+- **Shell Execution Model**: 입력 파싱부터 실행, 상태 갱신까지의 전체 흐름 구현
+
+## Key Functions
+
+- `main()`
+- `eval()`
+- `parse_line()`
+- `parse_pipe()`
+- `builtin_command()`
+- `sigchld_handler()`
+- `show_jobs()`
+- `kill_job()`
+- `bg_wake()`
+- `fg_run()`
+- `parse_job()`
