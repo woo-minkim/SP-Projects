@@ -1,12 +1,11 @@
 # SP-Projects
 
 시스템프로그래밍 과목에서 수행한 Lab 프로젝트 모음 저장소입니다.  
-각 Lab은 **서로 독립적인 과제**이며, 이전 Lab을 알아야 다음 Lab을 이해하는 구조가 아니라 주제별 실습 아카이브 형태입니다.
 
 ## 저장소 성격
 
 - 과목: System Programming
-- 구성: Lab 1 ~ Lab 4 (독립형 프로젝트)
+- 구성: Lab 1 ~ Lab 4
 - 범위: 코드, 명세서, 제출 문서 정리
 
 ## 빠른 탐색 가이드
@@ -24,7 +23,7 @@
 | Lab 3 | 네트워크 주식 서버 | Socket I/O, 동시성(Select/Thread), 동기화 | `Lab 3/task_1/stockserver.c`, `Lab 3/task_2/stockserver.c` | `Lab 3/task_1`, `Lab 3/task_2` |
 | Lab 4 | 동적 메모리 할당기 | Explicit Free List, Coalescing, Realloc | `Lab 4/src/mm.c` | (테스트 하네스 연동형) |
 
-## 내가 한 일 요약
+## 핵심 구현 내용 요약
 
 - Lab 1: list/hash/bitmap 자료구조 기능 구현 및 명령 기반 테스트 인터페이스 구성
 - Lab 2: 파이프, 시그널 처리, bg/fg/jobs/kill을 포함한 `myshell` 구현
