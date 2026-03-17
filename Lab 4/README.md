@@ -1,33 +1,50 @@
-# Lab 4: 동적 메모리 할당기 구현 (`mm.c`)
+﻿# Lab 4: 동적 메모리 할당기 구현 (`mm.c`)
 
-Lab 4는 malloc lab 스타일의 동적 메모리 할당기 구현 과제입니다.  
-핵심 구현 파일은 `src/mm.c`이며, 명시적 free list 기반 할당기를 작성했습니다.
+## 개요
 
-## 핵심 구현 내용
+Lab 4는 malloc lab 계열 과제로, `mm.c`에 사용자 수준 동적 메모리 할당기를 구현하는 프로젝트입니다.  
+핵심은 블록 메타데이터 관리, free list 운영, 할당/해제/재할당 경로를 일관되게 유지하는 것입니다.
 
-- 힙 초기화: `mm_init`
-- 할당: `mm_malloc`
-- 해제: `mm_free`
-- 재할당: `mm_realloc`
-- 가용 블록 탐색: `find_fit`
-- 블록 배치/분할: `place`
-- 인접 free 블록 병합: `coalesce`
-- free list 삽입/제거: `add_free`, `remove_free`
+## 구현 구조
 
-## 주요 파일
+### 1) 블록/메타데이터 모델
 
-- `src/mm.c`: 동적 할당기 구현 코드
-- `specification.pdf`: 과제 명세
-- `document.pdf`: 제출 문서
+- 헤더/푸터 기반 블록 관리 (`HDRP`, `FTRP`, `GET_SIZE`, `GET_ALLOC`)
+- 가용 블록 내부에 free list 링크 저장 (`NEXT_FP`, `PREV_FP`)
 
-## 실행/테스트 참고
+### 2) free list 운영
 
-이 Lab은 단독 실행 프로그램이 아니라, 과목 제공 테스트 하네스(`mdriver` 등)와 연동해 평가하는 형태입니다.  
-현재 저장소에는 구현 파일(`mm.c`) 중심으로 정리되어 있습니다.
+- `add_free()`: free 블록을 리스트에 삽입
+- `remove_free()`: 할당/병합 시 free 리스트에서 제거
+- 기본 전략: explicit free list 기반 탐색/갱신
 
-## 내가 구현한 포인트
+### 3) 할당/해제 흐름
 
-- explicit free list를 사용해 가용 블록을 관리
-- `malloc/free` 반복 상황에서 블록 분할/병합으로 단편화 완화
-- `realloc` 시 인접 블록 확장 가능 여부를 우선 확인하고, 필요 시 새 블록 할당/복사 처리
+- `mm_init()`
+  - 초기 힙 구성 후 `extend_heap()`로 초기 가용 블록 확보
+- `mm_malloc(size)`
+  - `find_fit()`으로 적합 블록 탐색
+  - 없으면 `extend_heap()` 호출
+  - `place()`에서 분할 가능 시 split
+- `mm_free(bp)`
+  - 블록 free 표시 후 `coalesce()`로 인접 free 블록 병합
+- `mm_realloc(oldptr, size)`
+  - 축소면 기존 블록 유지
+  - 확장 필요 시 인접 블록 확장 가능 여부 우선 확인 후, 불가하면 새 할당/복사
 
+## 실행/검증 방법
+
+이 Lab은 보통 과목 제공 테스트 하네스(`mdriver`)와 연동해 성능/정확도를 평가합니다.  
+현재 저장소에는 구현 코드(`src/mm.c`)와 명세/문서가 정리되어 있습니다.
+
+## 핵심 구현 포인트
+
+- 병합(`coalesce`)과 분할(`place`) 경로를 분리해 단편화 완화
+- free list 링크 조작(`NEXT_FP`/`PREV_FP`)을 함수화해 일관성 유지
+- `realloc`에서 인접 free 블록 확장을 먼저 시도해 불필요한 복사를 줄임
+
+## 한계 및 개선 여지
+
+- first-fit + 단일 free list 구조는 큰 워크로드에서 탐색 비용이 커질 수 있음
+- segregated free list/next-fit 등 정책으로 성능 튜닝 여지 존재
+- 멀티스레드 안전성은 고려하지 않은 구조이므로 동시 접근 환경에서는 별도 보호 필요

@@ -1,36 +1,56 @@
-# Lab 1: 자료구조 구현 (List / Hash / Bitmap)
+﻿# Lab 1: List / Hash / Bitmap 자료구조 실습
 
-Lab 1은 시스템프로그래밍 과목의 자료구조 실습으로, `list`, `hashtable`, `bitmap`을 직접 구현하고 명령형 인터페이스로 동작을 검증하는 프로젝트입니다.
+## 개요
 
-## 핵심 내용
+Lab 1은 세 가지 자료구조(`list`, `hashtable`, `bitmap`)를 구현하고, 명령형 인터페이스로 연산을 검증하는 과제입니다.  
+핵심은 "자료구조 구현" 자체와 "명령을 자료구조 API로 안전하게 연결하는 실행기"를 함께 만드는 것입니다.
 
-- Doubly Linked List 기반 연산 구현
-- Hash Table 구현(체이닝 방식, 리스트 활용)
-- Bitmap 생성/조회/수정/카운트 연산 구현
-- 표준 입력 명령을 읽어 자료구조를 생성/수정/출력하는 테스트 드라이버 구현
+## 구현 구조
 
-## 주요 파일
+### 1) 명령 인터페이스 계층 (`src/main.c`)
 
-- `src/main.c`: 명령 파싱 및 자료구조 연산 호출
-- `src/list.c`, `src/hash.c`, `src/bitmap.c`: 자료구조 로직
-- `src/Makefile`: 빌드 스크립트
-- `specification.pdf`: 과제 명세
+- `create`, `dumpdata`, `delete` 같은 공통 명령 처리
+- `list_*`, `hash_*`, `bitmap_*` 명령군을 파싱해 해당 함수로 라우팅
+- 표준 입력 기반 테스트 루프를 통해 자동 채점 스크립트/수동 테스트 모두 대응
 
-## 빌드 및 실행
+### 2) 객체 관리 방식
 
-실행 위치는 `Lab 1/src`입니다.
+- `my_list[10]`, `my_hash[10]`, `my_bitmap[10]` 배열로 객체 슬롯 관리
+- `find_index_func()`로 이름의 숫자 suffix를 인덱스로 변환해 접근
+- `*_in_use` 플래그로 객체 활성 상태 추적
+
+### 3) 자료구조 구현 계층
+
+- List: `push/pop/insert/remove/sort/splice/unique` 등 순차 구조 연산
+- Hash: `insert/find/delete/replace/apply` 및 iterator 기반 출력
+- Bitmap: `set/flip/reset/scan/count/contains` 등 비트 단위 연산
+
+## 실행 방법
+
+실행 위치: `Lab 1/src`
 
 ```bash
 make
 ./testlib
 ```
 
-프로그램은 stdin에서 명령을 읽습니다.  
-예: `create list list0`, `dumpdata list0`, `list_push_back list0 10`
+입력 예시:
 
-## 내가 구현한 포인트
+```text
+create list list0
+list_push_back list0 10
+list_push_back list0 20
+dumpdata list0
+```
 
-- 자료구조별 핵심 API 동작을 과제 명령 집합에 맞게 연결
-- 여러 객체(`list0`, `hash0`, `bm0` 등)를 인덱스로 관리하는 실행 구조 구현
-- `dumpdata`/연산 명령을 통해 실습 중간 상태를 빠르게 검증할 수 있게 구성
+## 핵심 구현 포인트
 
+- 명령 문자열을 함수 호출로 변환하는 얇은 dispatcher 구조를 유지해 구현 복잡도 분리
+- 자료구조별 출력(`dumpdata`) 포맷을 통일해 디버깅/검증 속도 향상
+- List/Hash/Bitmap 연산을 각각 별도 함수군으로 분리해 유지보수성 확보
+
+## 한계 및 개선 여지
+
+- 객체 이름에서 숫자 suffix를 전제로 하는 인덱싱은 확장성이 낮음 (`find_index_func` 의존)
+- `delete` 시점 즉시 자원 회수 대신 상태 플래그 중심 처리라, 수명 관리 명확화 여지 존재
+- 잘못된 입력 포맷에 대한 예외 메시지를 더 체계화하면 테스트 안정성이 올라감
