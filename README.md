@@ -8,15 +8,13 @@
 - 구성: `Lab 1` ~ `Lab 4`
 - 특징: 자료구조, 쉘, 네트워크 동시성, 메모리 할당기까지 주제별 실습 분리
 
-## 읽는 순서 (추천)
+## 과제 전반
 
-1. 과제 전체 그림 파악: 이 README
-2. 과제별 상세 확인:
+상세 확인:
    - [Lab 1 README](./Lab%201/README.md)
    - [Lab 2 README](./Lab%202/README.md)
    - [Lab 3 README](./Lab%203/README.md)
    - [Lab 4 README](./Lab%204/README.md)
-3. 각 Lab의 `specification.pdf` / `document.pdf`로 요구사항 및 제출 결과 교차 확인
 
 ## Lab 비교 관점
 
